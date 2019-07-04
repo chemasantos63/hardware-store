@@ -6,5 +6,8 @@
   "repository": "https://github.com/chemasantos63/hardware-store.git",
   "author": "Jose Maria Santos",
   "license": "MIT",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "typescript": "^3.5.2"
+  }
 }
