@@ -1,0 +1,10 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Hardware pos API",
+  "main": "index.js",
+  "repository": "https://github.com/chemasantos63/hardware-store.git",
+  "author": "Jose Maria Santos",
+  "license": "MIT",
+  "private": true
+}
