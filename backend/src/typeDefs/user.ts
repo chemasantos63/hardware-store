@@ -14,6 +14,7 @@ export default gql`
         id:ID!,
         email:String!,
         username:String!,
+        name:String!,
         createdAt:String!
     }
 `
