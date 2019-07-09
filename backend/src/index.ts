@@ -5,10 +5,13 @@ import session from "express-session"
 import mongoose from "mongoose"
 import typeDefs from "./typeDefs"
 import resolvers from "./resolvers"
+import schemaDirectives from "./directives"
+
 import {
     APP_PORT, IN_PROD, DB_USERNAME, DB_HOST, DB_NAME, DB_PASSWORD,
     SESS_LIFETIME, SESS_NAME, SESS_SECRET, REDIS_HOST, REDIS_PASSWORD, REDIS_PORT
 } from "./config"
+
 
 (async () => {
     try {
@@ -29,7 +32,7 @@ import {
             pass: REDIS_PASSWORD
 
         })
-
+        
         app.use(session({
             store,
             name: SESS_NAME,
@@ -43,9 +46,11 @@ import {
             }
         }))
         
+
         const server = new ApolloServer({
             typeDefs,
             resolvers,
+            schemaDirectives,
             playground: IN_PROD ? false : {
                 settings: {
                     "request.credentials": "include"
