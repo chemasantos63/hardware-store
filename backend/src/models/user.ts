@@ -17,7 +17,11 @@ const userSchema = new mongoose.Schema({
         }
     },
     name: String,
-    password: String
+    password: String,
+    tokenCount:{
+        type:Number,
+        default:0
+    }
 }, {
         timestamps: true
     })

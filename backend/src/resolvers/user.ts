@@ -2,16 +2,20 @@ import Joi from "joi"
 import mongoose from "mongoose"
 import { UserInputError } from "apollo-server-express"
 import { signUp, signIn } from "../schemas"
-import { attemptSignIn, signOut } from "../auth"
+import { attemptSignIn, signOut, createAccessToken, createRefreshToken } from "../auth"
 import { User } from "../models"
-
+import { sign } from "jsonwebtoken"
+import {
+    REFRESH_TOKEN_SECRET, ACCESS_TOKEN_SECRET,
+    REFRESH_TOKEN_COOKIE_NAME, ACCESS_TOKEN_COOKIE_NAME
+} from "../config"
 
 
 export default {
     Query: {
         me: (root, args, { req }, info) => {
             //TODO: projection 
-            return User.findById(req.session.userId)
+            return User.findById(req.userId)
         },
         users: (root, args, { req }, info) => {
             //TODO: auth, projection, pagination,sanitization
@@ -27,24 +31,31 @@ export default {
         }
     },
     Mutation: {
-        signUp: async (root, args, { req }, info) => {
+        signUp: async (root, args, { req , res }, info) => {
             //TODO no auth, validation
             await Joi.validate(args, signUp, { abortEarly: false })
+            
+            const user = new User(args)
 
-            const user = await User.create(args)
+            createAccessToken(req, res, { userId: user.id })
 
-            req.session.userId = user.id
+            createRefreshToken(req, res, { userId: user.id })
+
+            user.save()
 
             return user
         },
-        signIn: async (root, args, { req }, info) => {
+        signIn: async (root, args, { req, res }, info) => {
+
             Joi.validate(args, signIn, { abortEarly: false })
 
             const { email, password } = args
 
             const user = await attemptSignIn(args.email, args.password)
 
-            req.session.userId = user.id
+            createAccessToken(req, res, { userId: user.id, })
+
+            createRefreshToken(req, res, { userId: user.id, count: user.tokenCount })
 
             return user
         },

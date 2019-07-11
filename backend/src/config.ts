@@ -14,7 +14,12 @@ export const {
 
     REDIS_HOST = "redis-11468.c114.us-east-1-4.ec2.cloud.redislabs.com",
     REDIS_PORT = 11468,
-    REDIS_PASSWORD = "eeWfwTlpYWvPDx6sHxOYlVUUrFSqN96d"
+    REDIS_PASSWORD = "eeWfwTlpYWvPDx6sHxOYlVUUrFSqN96d",
+
+    REFRESH_TOKEN_SECRET = "secret!",
+    ACCESS_TOKEN_SECRET = "secret!666",
+    REFRESH_TOKEN_COOKIE_NAME = "refresh-token",
+    ACCESS_TOKEN_COOKIE_NAME = "access-token"
 } = process.env
 
 export const IN_PROD = NODE_ENV === "production"
