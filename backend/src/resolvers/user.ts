@@ -35,7 +35,7 @@ export default {
             //TODO no auth, validation
             await Joi.validate(args, signUp, { abortEarly: false })
             
-            const user = new User(args)
+            const user = new User(args) 
 
             createAccessToken(req, res, { userId: user.id })
 

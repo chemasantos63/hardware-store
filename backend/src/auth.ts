@@ -1,13 +1,14 @@
-import { AuthenticationError } from "apollo-server-core";
-import { User } from "./models";
+import { AuthenticationError } from "apollo-server-core"
+import { sign } from "jsonwebtoken"
 import {
-    SESS_NAME, REFRESH_TOKEN_COOKIE_NAME,
-    ACCESS_TOKEN_COOKIE_NAME, ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET
-} from "./config";
-import { sign } from "jsonwebtoken";
+    ACCESS_TOKEN_COOKIE_NAME, ACCESS_TOKEN_SECRET,
+    REFRESH_TOKEN_COOKIE_NAME, REFRESH_TOKEN_SECRET
+} from "./config"
+import { User } from "./models"
+import { Request,Response } from "express"
 
-export const attemptSignIn = async (email, password) => {
-    const message = "Incorrect email or password. Please try again."
+export const attemptSignIn = async (email: string, password: string) => {
+    const message: string = "Incorrect email or password. Please try again."
     const user = await User.findOne({ email })
 
     if (!user) {
@@ -22,9 +23,9 @@ export const attemptSignIn = async (email, password) => {
 
 }
 
-const signedIn = req => req.userId
+const signedIn = (req:Request) => req.userId
 
-const createToken = (req: any, res: any, cookieName: string, tokenName: string,
+const createToken = (req: Request, res: Response, cookieName: string, tokenName: any,
     expire: number, { userId, expiresIn, secret, count }) => {
 
     const token = sign({ userId, count }, secret, { expiresIn })
@@ -36,25 +37,25 @@ const createToken = (req: any, res: any, cookieName: string, tokenName: string,
     return token
 }
 
-export const ensureSignedIn = req => {
+export const ensureSignedIn = (req:Request) => {
     if (!signedIn(req)) {
         throw new AuthenticationError("You must be signed in.")
     }
 }
 
-export const ensureSignedOut = req => {
+export const ensureSignedOut = (req:Request) => {
     if (signedIn(req)) {
         throw new AuthenticationError("You are already signed in.")
     }
 }
 
-export const signOut = async (req, res) => {
+export const signOut = async (req:Request, res:Response) => {
 
     try {
 
         // res.clearCookie(REFRESH_TOKEN_COOKIE_NAME)
 
-         res.clearCookie(ACCESS_TOKEN_COOKIE_NAME)
+        res.clearCookie(ACCESS_TOKEN_COOKIE_NAME)
 
         let user = await User.findOne({ _id: req.userId })
 
@@ -70,7 +71,7 @@ export const signOut = async (req, res) => {
         }
 
         const query = {
-            "email":user.email
+            "email": user.email
         }
 
         await User.updateOne(query, update)
@@ -84,7 +85,7 @@ export const signOut = async (req, res) => {
     return true
 }
 
-export const createAccessToken = (req, res, { userId }) => {
+export const createAccessToken = (req:Request, res:Response, { userId }) => {
 
     return createToken(req, res, ACCESS_TOKEN_COOKIE_NAME, "accessToken", 60 * 15, {
         userId,
@@ -94,7 +95,7 @@ export const createAccessToken = (req, res, { userId }) => {
     })
 }
 
-export const createRefreshToken = (req, res, { userId, count }) => {
+export const createRefreshToken = (req:Request, res:Response, { userId, count }) => {
 
     createToken(req, res, REFRESH_TOKEN_COOKIE_NAME, "refreshToken", 60 * 60 * 24 * 7, {
         userId,
@@ -107,6 +108,6 @@ export const createRefreshToken = (req, res, { userId, count }) => {
 export const isNotValidateToken = async (userId, count) => {
 
     const user = await User.findOne({ _id: userId })
-  
+
     return !user || user.tokenCount !== count
 }

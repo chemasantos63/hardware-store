@@ -1,45 +1,59 @@
-import mongoose from "mongoose"
-import { hash, compare } from "bcryptjs"
+import { compare, hash } from "bcryptjs"
+import { model, Schema, DocumentQuery } from "mongoose"
+import { UserDocument, UserModel } from "../types"
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema({
     email: {
         type: String,
-        validate: {
-            validator: email => User.doesntExist({ email }),
-            message: ({ value }) => `Email ${value} has already been taken.` //TODO : security
-        }
+        validate: [
+            //@ts-ignore
+            (email: string): boolean => User.where("email", email).none(),
+            "Email is already taken."
+        ]
     },
     username: {
         type: String,
-        validate: {
-            validator: username => User.doesntExist({ username }),
-            message: ({ value }) => `Username ${value} has already been taken.` //TODO: security
-        }
+        validate: [
+            //@ts-ignore
+            (username:string):boolean => User.where("username",username).none(),
+            "Username is already taken."
+        ]
     },
-    name: String,
+    name: {
+        type:String,
+        required:true,
+        maxlength:100,
+        trim:true
+    },
     password: String,
-    tokenCount:{
-        type:Number,
-        default:0
+    tokenCount: {
+        type: Number,
+        default: 0
     }
 }, {
         timestamps: true
     })
 
-userSchema.pre("save", async function (next) {
+userSchema.pre<UserDocument>("save", async function () {
     if (this.isModified("password")) {
-        this.password = await hash(this.password, 10)
+        this.password = await User.hash(this.password)
     }
 })
 
-userSchema.statics.doesntExist = async function (options) {
-    return await this.where(options).countDocuments() === 0
+userSchema.query.none = async function (
+    this: DocumentQuery<any, UserDocument>
+): Promise<boolean> {
+    return (await this.countDocuments()) === 0
 }
 
-userSchema.methods.matchesPassword = function (password){
-    return compare(password,this.password)
+userSchema.statics.hash = (password: string): Promise<string> =>
+    hash(password, 10)
+
+userSchema.methods.matchesPassword = function (this: UserDocument,
+    password: string): Promise<boolean> {
+    return compare(password, this.password)
 }
 
-const User = mongoose.model('User', userSchema)
+const User: UserModel = model<UserDocument, UserModel>("User", userSchema)
 
 export default User
